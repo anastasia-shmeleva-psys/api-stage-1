@@ -13,6 +13,12 @@ $blank_todo = [
  * @return array
  */
 function listTodo(): array {
+    $todos = read_data();
+    if ($todos == null) {
+        return[];
+    }
+
+    return read_data();
 }
 
 /**
@@ -22,6 +28,16 @@ function listTodo(): array {
  * @return mixed
  */
 function createTodo (mixed $todoData): mixed {
+
+    global $blank_todo;
+    $newTodo = array_merge($blank_todo, $todoData);
+    $newTodo['id'] = uniqid();
+
+    $todos = read_data();
+    $todos[] = $newTodo;
+
+    write_data($todos);
+    return $newTodo;
 }
 
 /**
@@ -31,7 +47,30 @@ function createTodo (mixed $todoData): mixed {
  * @param $todoData
  * @return mixed
  */
-function editTodo($todoId, $todoData) {
+function editTodo($todoId, $todoData): mixed {
+
+    $todos = read_data();
+
+    if ($todos == null) {
+        return false;
+    }
+    foreach ($todos as $key => $todo) {
+        if ($todo['id'] == $todoId) {
+            $changedTodo = $todo;
+            $id = $key;
+            break;
+        }
+    }
+
+    if (!$changedTodo) {
+        return false;
+    }
+
+    $changedTodo = array_merge($changedTodo, $todoData);
+    $todos[$id] = $changedTodo;
+
+    write_data($todos);
+    return $changedTodo;
 }
 
 /**
@@ -40,8 +79,15 @@ function editTodo($todoId, $todoData) {
  * @param $todoId
  * @return void
  */
-function readTodo($todoId) {
+function readTodo($todoId): mixed {
+    $todos = read_data();
 
+    foreach ($todos as $todo) {
+        if ($todo['id'] == $todoId) {
+            return $todo;
+        }
+    }
+    return false;
 }
 
 
@@ -51,5 +97,16 @@ function readTodo($todoId) {
  * @param $todoId
  * @return bool
  */
-function deleteTodo($todoId) {
+function deleteTodo($todoId): mixed
+{
+    $todos = read_data();
+
+    foreach ($todos as $key => $todo) {
+        if ($todo['id'] == $todoId) {
+            unset($todos[$key]);
+            write_data($todos);
+            return true;
+        }
+    }
+    return false;
 }
